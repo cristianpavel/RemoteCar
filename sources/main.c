@@ -5,6 +5,7 @@
 #include "usart.h"
 
 #define MIN_DISTANCE 25
+#define OK '1'
 #define MOVE_FORWARD '1'
 #define MOVE_BACKWARDS '2'
 #define STEER_LEFT_FORWARD '4'
@@ -18,8 +19,6 @@
 #define TRIG_DELAY 100
 #define HORN_DELAY 2
 #define STOP '0'
-#define FREQ_OF_HITS 0.50
-#define ITERATIONS_IN_CYCLE 7
 
 static int hit = 0;
 static int horn_activated;
@@ -159,6 +158,9 @@ int main()
 			is_moving_forward()) {
 			USART0_transmit(STOP);
 			stop();
+		} else {
+
+			USART0_transmit(OK);
 		}
 		
 		if (horn_activated == 1) {
