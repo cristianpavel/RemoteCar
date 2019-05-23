@@ -2,7 +2,7 @@
 #include "timer1.h"
 
 
-static car_t car;
+static motor_t motor;
 
 /**
  * Initialization of IO ports.
@@ -31,16 +31,25 @@ static void IO_init(void)
 }
 
 /**
- * Return 1 if car is moving forward
+ * Return 1 if motor is moving forward
  */
 int is_moving_forward(void)
 {
 
-	return (int)car.forward; 
+	return (int)motor.forward; 
 
 }
 
 
+/**
+ * Return 1 if motor is stopped
+ */
+int is_stopped(void)
+{
+
+	return (int)motor.stopped; 
+
+}
 /**
  * Set speed.
  *
@@ -52,10 +61,10 @@ static void set_speed(float speed_as_duty_cycle)
 			|| speed_as_duty_cycle < 0.3)
 		return;
 
-	car.speed = speed_as_duty_cycle;
+	motor.speed = speed_as_duty_cycle;
 
-	ENABLE_A = compute_OCR_for_duty_cycle(car.speed);
-	ENABLE_B = compute_OCR_for_duty_cycle(car.speed);
+	ENABLE_A = compute_OCR_for_duty_cycle(motor.speed);
+	ENABLE_B = compute_OCR_for_duty_cycle(motor.speed);
 
 }
 
@@ -69,6 +78,7 @@ void init_l298n(float speed_as_duty_cycle)
 	IO_init();
 	init_timer1();
 	set_speed(speed_as_duty_cycle);
+	motor.stopped = 1;
 }
 
 /**
@@ -76,7 +86,7 @@ void init_l298n(float speed_as_duty_cycle)
  */
 void equalize_speed(void)
 {
-	set_speed(car.speed);
+	set_speed(motor.speed);
 
 }
 
@@ -86,7 +96,8 @@ void equalize_speed(void)
  */
 void stop()
 {
-	car.forward = 0;
+	motor.forward = 0;
+	motor.stopped = 1;
 	/* INPUTUTS are set to LOW*/
 	PORT_INPUT &= ~(1 << INPUT1);
 	PORT_INPUT &= ~(1 << INPUT2);
@@ -101,7 +112,8 @@ void stop()
  */
 void move_forward(void)
 {
-	car.forward = 1;
+	motor.forward = 1;
+	motor.stopped = 0;
 	equalize_speed();
 	PORT_INPUT |= (1 << INPUT1);
 	PORT_INPUT &= ~(1 << INPUT2);
@@ -116,7 +128,8 @@ void move_forward(void)
  */
 void move_backwards(void)
 {
-	car.forward = 0;
+	motor.forward = 0;
+	motor.stopped = 0;
 	equalize_speed();
 	PORT_INPUT &= ~(1 << INPUT1);
 	PORT_INPUT |= (1 << INPUT2);
@@ -134,8 +147,9 @@ void move_backwards(void)
  */
 void steer_left(void)
 {
-	car.forward = 1;
-	
+	motor.forward = 1;
+	motor.stopped = 0;
+
 	equalize_speed();
 	ENABLE_A = 0;
 	ENABLE_B = ICR1;
@@ -157,7 +171,9 @@ void steer_left(void)
  */
 void steer_right(void)
 {
-	car.forward = 1;
+	motor.forward = 1;
+	motor.stopped = 0;
+
 	equalize_speed();
 	ENABLE_B = 0;
 	ENABLE_A = ICR1;
@@ -171,13 +187,13 @@ void steer_right(void)
 
 void speed_up(void)
 {
-	set_speed(car.speed + SPEED_UNIT);
+	set_speed(motor.speed + SPEED_UNIT);
 
 }
 
 void speed_down(void)
 {
 
-	set_speed(car.speed - SPEED_UNIT);
+	set_speed(motor.speed - SPEED_UNIT);
 }
 

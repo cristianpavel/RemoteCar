@@ -19,9 +19,10 @@
 typedef struct {
 
 	int forward;
+	int stopped;
 	float speed;
 
-} car_t;
+} motor_t;
 
 /**
  * INIT function.
@@ -69,5 +70,8 @@ void stop(void);
  */
 int is_moving_forward(void);
 
+/**
+ * Check if motors are stopped*/
+int is_stopped(void);
 #endif
 
